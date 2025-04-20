@@ -1,7 +1,10 @@
 import { Request, Response } from 'express';
+import { QueryTypes } from 'sequelize';
 import { sequelize } from '../configs/sequelize';
 import '../models/mongo/Category';
 import Product from '../models/mongo/Product';
+import User from '../models/sql/User';
+import Order from '../models/sql/Order';
 import { ICategory } from '../types';
 
 export const dailyRevenue = async (_: Request, res: Response) => {
@@ -86,5 +89,40 @@ export const categorySales = async (_: Request, res: Response) => {
       data: null,
       message: 'Failed to fetch category sales',
     });
+  }
+};
+
+export const summary = async (_: Request, res: Response) => {
+  try {
+    const [userCount, productCount, orderCount] = await Promise.all([
+      User.count(),
+      Product.countDocuments(),
+      Order.count(),
+    ]);
+
+    interface RevenueResult {
+      totalRevenue: number | null;
+    }
+    const [revenueResult] = await sequelize.query<RevenueResult>(
+      `
+      SELECT SUM(total) as totalRevenue FROM Orders
+    `,
+      {
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    const totalRevenue = revenueResult?.totalRevenue || 0;
+
+    res.json({
+      data: {
+        users: userCount,
+        products: productCount,
+        orders: orderCount,
+        revenue: totalRevenue,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch admin dashboard data' });
   }
 };

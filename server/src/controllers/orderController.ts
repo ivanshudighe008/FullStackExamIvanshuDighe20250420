@@ -30,11 +30,10 @@ export const checkout = async (req: AuthenticatedRequest, res: Response) => {
       });
     }
     await Cart.deleteOne({ userId: req.user?.id });
-    res.json({ message: 'Order placed successfully' });
+    res.json({ success: true, message: 'Order placed successfully' });
   } catch (error) {
-    console.log(error);
     newOrder.destroy({});
-    res.json({ message: 'Something went wrong!' });
+    res.json({ success: false, message: 'Something went wrong!' });
   }
 };
 

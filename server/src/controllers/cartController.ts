@@ -6,7 +6,6 @@ export const getCart = async (req: AuthenticatedRequest, res: Response) => {
   const cart = await Cart.findOne({ userId: req.user?.id }).populate(
     'items.productId'
   );
-  console.log(cart);
   res.json({
     data: cart ? cart : { userId: req.user?.id, items: [] },
     message: cart ? 'Cart fetched successfully' : 'Your cart is empty',
@@ -14,6 +13,16 @@ export const getCart = async (req: AuthenticatedRequest, res: Response) => {
 };
 
 export const updateCart = async (req: AuthenticatedRequest, res: Response) => {
+  const items = [];
+  for (const item of req.body.items) {
+    const productId =
+      typeof item.productId === 'object' ? item.productId._id : item.productId;
+    const obj = {
+      productId,
+      quantity: item.quantity,
+    };
+    items.push(obj);
+  }
   const cart = await Cart.findOneAndUpdate(
     { userId: req.user?.id },
     { $set: { items: req.body.items } },
