@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import {
   fetchCartFromServer,
@@ -8,12 +9,12 @@ import {
 } from '@/redux/slices/cartSlice';
 import { ShoppingCartIcon } from '@heroicons/react/24/outline';
 import { useDispatch, useSelector } from 'react-redux';
-import { useEffect } from 'react';
-import { clearUser, logoutUser, selectUser } from '@/redux/slices/authSlice';
+import { logoutUser, selectUser } from '@/redux/slices/authSlice';
 import { setUser } from '@/redux/slices/authSlice';
+import { AppDispatch } from '@/redux/store';
 
 const Navbar = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const cartItems = useSelector(selectCartItems);
   const user = useSelector(selectUser);
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
