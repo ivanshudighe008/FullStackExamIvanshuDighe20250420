@@ -4,12 +4,17 @@ import { Sequelize } from 'sequelize';
 dotenv.config();
 
 export const sequelize = new Sequelize(
-  process.env.MYSQL_DB as string,
-  process.env.MYSQL_USER as string,
-  process.env.MYSQL_PASSWORD as string,
+  process.env.MYSQLDATABASE as string,
+  process.env.MYSQLUSER as string,
+  process.env.MYSQLPASSWORD as string,
   {
-    host: process.env.MYSQL_HOST,
+    host: process.env.MYSQLHOST,
     dialect: 'mysql',
+    dialectOptions: {
+      ssl: {
+        rejectUnauthorized: false // important for Railway's managed SSL
+      }
+    },
     logging: false,
   }
 );
