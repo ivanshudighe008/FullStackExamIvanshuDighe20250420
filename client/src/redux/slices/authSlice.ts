@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState, AppDispatch } from '../store';
 import { clearCart } from './cartSlice';
+import { redirect } from 'next/navigation';
 
 interface UserState {
   user: any | null;
@@ -28,6 +29,7 @@ const authSlice = createSlice({
 export const logoutUser = () => (dispatch: AppDispatch) => {
   dispatch(clearUser());
   dispatch(clearCart());
+  redirect('/products');
 };
 
 export const { setUser, clearUser } = authSlice.actions;

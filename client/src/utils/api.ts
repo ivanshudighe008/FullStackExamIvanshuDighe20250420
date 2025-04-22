@@ -1,60 +1,103 @@
+import { redirect } from "next/navigation";
+
 const BASE_URL = 'http://localhost:5000/api';
 
-const headers = () => ({
+const getPublicHeaders = (): HeadersInit => ({
   'Content-Type': 'application/json',
-  Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
 });
 
+const getAuthHeaders = (): HeadersInit => {
+  const token = localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
+
+const fetchPublic = async ({
+  url,
+  options = {},
+  revalidate,
+}: {
+  url: string;
+  options?: RequestInit;
+  revalidate?: number;
+}): Promise<any> => {
+  const res = await fetch(url, {
+    ...options,
+    headers: getPublicHeaders(),
+    ...(revalidate ? { next: { revalidate } } : {}),
+  });
+  const data = await res.json();
+  return data.data || data;
+};
+
+const fetchPrivate = async ({
+  url,
+  options = {},
+  revalidate,
+}: {
+  url: string;
+  options?: RequestInit;
+  revalidate?: number;
+}): Promise<any> => {
+  const res = await fetch(url, {
+    ...options,
+    headers: getAuthHeaders(),
+    ...(revalidate ? { next: { revalidate } } : {}),
+  });
+  const data = await res.json();
+  if (res?.status === 401) {
+    redirect('/products');
+  }
+  return data.data || data;
+};
+
 export const registerUser = async (data: any) =>
-  fetch(`${BASE_URL}/auth/register`, {
-    method: 'POST',
-    headers: headers(),
-    body: JSON.stringify(data),
-  }).then((res) => res.json());
+  fetchPublic({
+    url: `${BASE_URL}/auth/register`,
+    options: {
+      method: 'POST',
+      body: JSON.stringify(data),
+    },
+  });
 
 export const loginUser = async (data: any) =>
-  fetch(`${BASE_URL}/auth/login`, {
-    method: 'POST',
-    headers: headers(),
-    body: JSON.stringify(data),
-  }).then((res) => res.json());
+  fetchPublic({
+    url: `${BASE_URL}/auth/login`,
+    options: {
+      method: 'POST',
+      body: JSON.stringify(data),
+    },
+  });
 
 export const getProducts = async () =>
-  fetch(`${BASE_URL}/products`, { headers: headers() })
-    .then((res) => res.json())
-    .then((res) => res.data);
+  fetchPublic({ url: `${BASE_URL}/products`, revalidate: 60 });
 
 export const getProductById = async (id: string) =>
-  fetch(`${BASE_URL}/products/${id}`, { headers: headers() })
-    .then((res) => res.json())
-    .then((res) => res.data);
+  fetchPublic({ url: `${BASE_URL}/products/${id}` });
 
-export const getCart = async () =>
-  fetch(`${BASE_URL}/cart`, { headers: headers() })
-    .then((res) => res.json())
-    .then((res) => res.data);
+export const getCart = async () => fetchPrivate({ url: `${BASE_URL}/cart` });
 
 export const updateCart = async (items: Array<any>) =>
-  fetch(`${BASE_URL}/cart`, {
-    method: 'PUT',
-    headers: headers(),
-    body: JSON.stringify({ items }),
-  })
-    .then((res) => res.json())
-    .then((res) => res.data);
+  fetchPrivate({
+    url: `${BASE_URL}/cart`,
+    options: {
+      method: 'PUT',
+      body: JSON.stringify({ items }),
+    },
+  });
 
 export const checkout = async () =>
-  fetch(`${BASE_URL}/orders/checkout`, {
-    method: 'POST',
-    headers: headers(),
-  }).then((res) => res.json());
+  fetchPrivate({
+    url: `${BASE_URL}/orders/checkout`,
+    options: {
+      method: 'POST',
+    },
+  });
 
 export const getCategorySales = async () =>
-  fetch(`${BASE_URL}/reports/category-sales`, { headers: headers() })
-    .then((res) => res.json())
-    .then((res) => res.data);
+  fetchPrivate({ url: `${BASE_URL}/reports/category-sales`, revalidate: 60 });
 
 export const getTopSpenders = async () =>
-  fetch(`${BASE_URL}/reports/top-spenders`, { headers: headers() })
-    .then((res) => res.json())
-    .then((res) => res.data);
+  fetchPrivate({ url: `${BASE_URL}/reports/top-spenders`, revalidate: 60 });

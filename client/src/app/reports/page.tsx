@@ -15,15 +15,19 @@ export default function ReportsPage() {
   return (
     <div>
       <h2 className='text-xl font-bold mb-4'>Category Reports</h2>
-      <ReportChart categorySales={categorySales} />
+      {categorySales && Array.isArray(categorySales) && (
+        <ReportChart categorySales={categorySales} />
+      )}
 
       <h2 className='text-xl font-bold mt-4 mb-4'>Top Spenders Reports</h2>
       <ul>
-        {topSpenders.map((sp: any, i: number) => (
-          <li key={i}>
-            {sp.email}: ${sp.totalSpent}
-          </li>
-        ))}
+        {topSpenders &&
+          Array.isArray(topSpenders) &&
+          topSpenders?.map((sp: any, i: number) => (
+            <li key={i}>
+              {sp.email}: ${sp.totalSpent}
+            </li>
+          ))}
       </ul>
     </div>
   );
