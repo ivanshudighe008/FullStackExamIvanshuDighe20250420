@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api`;
 
 const getPublicHeaders = (): HeadersInit => ({
   'Content-Type': 'application/json',
